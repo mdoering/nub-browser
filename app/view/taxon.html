@@ -1,5 +1,5 @@
 <div id="name" class="page-header">
-	<h1>{{taxon.details.scientificName}} <small>{{taxon.details.rank}}</small> <small style="float:right; margin-top:30px;"><a href="http://www.gbif.org/species/{{taxon.key}}">portal {{taxon.key}}</a></small></h1>
+	<h1>{{taxon.details.scientificName}} <small>{{taxon.details.rank}}</small> <small style="float:right; margin-top:30px;"><a href="http://www.gbif.org/species/{{taxon.key}}">gbif.org/species/{{taxon.key}}</a></small></h1>
 </div>
   
   
@@ -7,12 +7,12 @@
   <div class="col-md-6">
     <ul class="list-unstyled">
       <li ng-repeat="tax in taxon.parents">
-        <a style="margin-left: {{$index*10}}px" href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a> <small>{{tax.rank}}</small>
+        <a style="margin-left:{{$index*10}}px" href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a> <small>{{tax.rank}}</small>
       </li>
-      <li style="margin-left: {{taxon.parents.length*10}}px">
+      <li style="margin-left:{{taxon.parents.length*10}}px">
         <strong>{{taxon.details.canonicalName}}</strong> <small>{{taxon.details.rank}}</small>
       </li>
-      <li style="margin-left: {{(taxon.parents.length+1)*10}}px" ng-repeat="tax in taxon.children">
+      <li style="margin-left:{{(taxon.parents.length+1)*10}}px" ng-repeat="tax in taxon.children">
         <a href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a> <small>{{tax.rank}}</small>
       </li>
     </ul>

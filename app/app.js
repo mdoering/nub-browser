@@ -3,15 +3,23 @@
 // Declare app level module which depends on views, and components
 angular.module('nubBrowser', ['ngRoute'])
 
-.constant("GBIF_API", "http://api.gbif.org/v1/")
-
+.constant("CFG", {
+  "api": "http://api.gbif.org/v1/",
+  "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
+})
+    
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider
   .when('/', {
-      templateUrl: 'view/root.html',
-      controller: 'RootCtrl',
-      controllerAs: 'root'
-    })
+    templateUrl: 'view/root.html',
+    controller: 'RootCtrl',
+    controllerAs: 'root'
+  })
+  .when('/search/:q', {
+    templateUrl: 'view/search.html',
+    controller: 'SearchCtrl',
+    controllerAs: 'search'
+  })
   .when('/taxon/:id', {
     templateUrl: 'view/taxon.html',
     controller: 'TaxonCtrl',
@@ -21,14 +29,13 @@ angular.module('nubBrowser', ['ngRoute'])
 }])
 
 
-.controller('RootCtrl', ['$http', 'GBIF_API', function($http, GBIF_API) {
+.controller('RootCtrl', ['$http', 'CFG', function($http, CFG) {
   var self = this;
-
   self.kingdoms = [];
-
+      
   // load root kingdoms
   var getRoot = function() {
-    $http.get(GBIF_API+"species/root/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c").success(function (data) {
+    $http.get(CFG.api+"species/root/"+CFG.datasetKey).success(function (data) {
       self.kingdoms = data.results;
     });
   };
@@ -36,7 +43,7 @@ angular.module('nubBrowser', ['ngRoute'])
   getRoot();
 }])
 
-.controller('TaxonCtrl', ['$http', '$routeParams', 'GBIF_API', function($http, $routeParams, GBIF_API) {
+.controller('TaxonCtrl', ['$http', 'CFG', '$routeParams', function($http, CFG, $routeParams) {
   var self = this;
 
   self.key = $routeParams.id;
@@ -45,7 +52,7 @@ angular.module('nubBrowser', ['ngRoute'])
   self.synonyms = [];
   self.children = [];
 
-  var speciesUrl = GBIF_API + 'species/' + self.key;
+  var speciesUrl = CFG.api + 'species/' + self.key;
 
   var pageChildren = function(offset) {
     var url = speciesUrl+"/children?limit=20&offset="+offset;
@@ -88,5 +95,24 @@ angular.module('nubBrowser', ['ngRoute'])
   loadTaxon();
 }])
 
+.controller('SearchCtrl', ['$http', 'CFG', '$routeParams', function($http, CFG, $routeParams) {
+  var self = this;
+  self.query = $routeParams.q;
+  self.results = [];
+
+  var search = function() {
+    $http.get(CFG.api+"species/search?limit=50&datasetKey="+CFG.datasetKey+"&q="+self.query).success(function (data) {
+    //$http.get(CFG.api+"species?limit=50&datasetKey="+CFG.datasetKey+"&name="+self.query).success(function (data) {
+      self.results = data.results;
+    });
+  };
+  search();
+}])
+
+.controller('MainCtrl', ['$scope', '$location', function($scope, $location) {
+  $scope.search = function() {
+    $location.path("/search/"+$scope.query);
+  };
+}]);
 
 
