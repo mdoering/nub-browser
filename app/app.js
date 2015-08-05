@@ -11,10 +11,15 @@ angular.module('nubBrowser', ['ngRoute'])
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider
   .when('/', {
-      templateUrl: 'view/root.html',
-      controller: 'RootCtrl',
-      controllerAs: 'root'
-    })
+    templateUrl: 'view/root.html',
+    controller: 'RootCtrl',
+    controllerAs: 'root'
+  })
+  .when('/search/:q', {
+    templateUrl: 'view/search.html',
+    controller: 'SearchCtrl',
+    controllerAs: 'search'
+  })
   .when('/taxon/:id', {
     templateUrl: 'view/taxon.html',
     controller: 'TaxonCtrl',
@@ -48,7 +53,6 @@ angular.module('nubBrowser', ['ngRoute'])
   self.children = [];
 
   var speciesUrl = CFG.api + 'species/' + self.key;
-  console.log(speciesUrl);
 
   var pageChildren = function(offset) {
     var url = speciesUrl+"/children?limit=20&offset="+offset;
@@ -91,19 +95,24 @@ angular.module('nubBrowser', ['ngRoute'])
   loadTaxon();
 }])
 
-.controller('SearchCtrl', ['$http', 'CFG', function($http, CFG) {
+.controller('SearchCtrl', ['$http', 'CFG', '$routeParams', function($http, CFG, $routeParams) {
   var self = this;
-  self.query;
+  self.query = $routeParams.q;
   self.results = [];
 
-  var search = function(q) {
-    console.log("search " +q);
-    console.log(self);
+  var search = function() {
     $http.get(CFG.api+"species/search?limit=50&datasetKey="+CFG.datasetKey+"&q="+self.query).success(function (data) {
+    //$http.get(CFG.api+"species?limit=50&datasetKey="+CFG.datasetKey+"&name="+self.query).success(function (data) {
       self.results = data.results;
     });
   };
-}]);
+  search();
+}])
 
+.controller('MainCtrl', ['$scope', '$location', function($scope, $location) {
+  $scope.search = function() {
+    $location.path("/search/"+$scope.query);
+  };
+}]);
 
 

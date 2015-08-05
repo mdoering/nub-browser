@@ -5,7 +5,7 @@
 <div class="row">
   <ul>
     <li ng-repeat="tax in search.results">
-      <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a>
+      <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a> <small>{{tax.rank}} in {{tax.family}}, {{tax.kingdom}}</small>
     </li>
   </ul>
 </div>
