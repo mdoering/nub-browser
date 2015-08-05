@@ -15,9 +15,9 @@
       </div>
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse">
-        <form class="navbar-form navbar-left" role="search">
+        <form class="navbar-form navbar-left" role="search" ng-controller="SearchCtrl" ng-submit="search(q)">
           <div class="form-group">
-            <input type="text" class="form-control" placeholder="Search">
+            <input type="text" ng-model="q" class="form-control" placeholder="Search">
           </div>
         </form>
         <ul class="nav navbar-nav">
