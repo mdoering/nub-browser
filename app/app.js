@@ -39,33 +39,53 @@ angular.module('nubBrowser', ['ngRoute'])
 .controller('TaxonCtrl', ['$http', '$routeParams', 'GBIF_API', function($http, $routeParams, GBIF_API) {
   var self = this;
 
-  self.key;
+  self.key = $routeParams.id;
   self.details;
   self.parents = [];
   self.synonyms = [];
   self.children = [];
 
+  var speciesUrl = GBIF_API + 'species/' + self.key;
+
+  var pageChildren = function(offset) {
+    var url = speciesUrl+"/children?limit=20&offset="+offset;
+    $http.get(url).success(function (resp) {
+      if (resp.results.length > 0) {
+        self.children = self.children.concat(resp.results);
+        if (!resp.endOfRecords){
+          pageChildren(20+resp.offset);
+        }
+      }
+    })
+  };
+
+  var pageSynonyms = function(offset) {
+    var url = speciesUrl+"/synonyms?limit=20&offset="+offset;
+    $http.get(url).success(function (resp) {
+      if (resp.results.length > 0) {
+        self.synonyms = self.synonyms.concat(resp.results);
+        if (!resp.endOfRecords){
+          pageSynonyms(20+resp.offset);
+        }
+      }
+    })
+  };
+
   // retrieves all taxon details
-  var loadTaxon = function(id) {
-    self.key = id;
-    var taxonUrl = GBIF_API + 'species/' + id;
-    console.log("load " + taxonUrl);
-    $http.get(taxonUrl).success(function (data) {
+  var loadTaxon = function() {
+    console.log("load " + speciesUrl);
+    $http.get(speciesUrl).success(function (data) {
       self.details = data;
     });
-    $http.get(taxonUrl+"/parents").success(function (data) {
+    $http.get(speciesUrl+"/parents").success(function (data) {
       self.parents = data;
     });
-    $http.get(taxonUrl+"/children").success(function (data) {
-      self.children = data.results;
-    });
-    $http.get(taxonUrl+"/synonyms").success(function (data) {
-      self.synonyms = data.results;
-    });
+    pageChildren(0);
+    pageSynonyms(0);
   };
-      
+
   // load data
-  loadTaxon($routeParams.id);
+  loadTaxon();
 }])
 
 

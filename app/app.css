@@ -4,7 +4,7 @@
 .row > [class^="col-"] {
   padding-right: 0;
 }
-ul.tree li + li::before {
+ul.tree li + li.indent::before {
   content: '';
   float: left;
   height: 1.5em; /* a bit more than line height */
@@ -13,4 +13,10 @@ ul.tree li + li::before {
 small {
   color: #aaa;
   text-transform: lowercase;
+}
+.dl-horizontal dt {
+  width: auto;
+}
+.dl-horizontal dd {
+  margin-left: 100px;
 }
