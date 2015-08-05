@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html ng-app="nubBrowser" class="no-js">
+<head>
+  <meta charset='utf-8'/>
+  <title>GBIF Taxonomy Browser</title>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body ng-app="nubBrowser">
+
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <a href="#/" class="navbar-brand"><span class="text-primary">GBIF</span> BACKBONE</a>
+      </div>
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse">
+        <form class="navbar-form navbar-left" role="search">
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Search">
+          </div>
+        </form>
+        <ul class="nav navbar-nav">
+          <li><a href="#/">Kingdoms</a></li>
+          <li><a href="http://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c">GBIF Portal</a></li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div>
+  </nav>
+  
+  <div class="container" id="main">
+    <div ng-view></div>
+  </div>
+
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
