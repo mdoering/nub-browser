@@ -1,13 +1,19 @@
 <div id="name" class="page-header">
-	<h1>{{taxon.details.scientificName}} <small>{{taxon.details.rank}}</small></h1>
+	<h1>{{taxon.details.scientificName}} <small>{{taxon.details.rank}}</small> <small style="float:right; margin-top:30px;"><a href="http://www.gbif.org/species/{{taxon.key}}">portal {{taxon.key}}</a></small></h1>
 </div>
   
   
 <div class="row">
   <div class="col-md-6">
-    <ul class="tree list-unstyled">
+    <ul class="list-unstyled">
       <li ng-repeat="tax in taxon.parents">
-        {{tax.rank}}: <a href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a>
+        <a style="margin-left: {{$index*10}}px" href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a> <small>{{tax.rank}}</small>
+      </li>
+      <li style="margin-left: {{taxon.parents.length*10}}px">
+        <strong>{{taxon.details.canonicalName}}</strong> <small>{{taxon.details.rank}}</small>
+      </li>
+      <li style="margin-left: {{(taxon.parents.length+1)*10}}px" ng-repeat="tax in taxon.children">
+        <a href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a> <small>{{tax.rank}}</small>
       </li>
     </ul>
   </div>
@@ -17,44 +23,26 @@
       <dt>Status</dt>
       <dd>{{taxon.details.taxonomicStatus}}</dd>
 
-      <dt>Accepted</dt>
-      <dd><a href="#/taxon/{{taxon.details.acceptedKey}}">{{taxon.details.accepted}}</a></dd>
-
-      <dt>Basionym</dt>
-      <dd><a href="#/taxon/{{taxon.details.basionymKey}}">{{taxon.details.basionym}}</a></dd>
-
       <dt>According to</dt>
       <dd>{{taxon.details.accordingTo}}</dd>
 
       <dt>Published in</dt>
       <dd>{{taxon.details.publishedIn}}</dd>
 
-      <dt>Portal</dt>
-      <dd><a href="http://www.gbif.org/species/{{taxon.key}}">http://www.gbif.org/species/{{taxon.key}}</a></dd>
+      <dt>Basionym</dt>
+      <dd><a href="#/taxon/{{taxon.details.basionymKey}}">{{taxon.details.basionym}}</a></dd>
 
-      <dt>Remarks</dt>
-      <dd>{{taxon.details.remarks}}</dd>
+      <dt>Accepted</dt>
+      <dd><a href="#/taxon/{{taxon.details.acceptedKey}}">{{taxon.details.accepted}}</a></dd>
+
+      <dt>Synonyms</dt>
+      <dd>
+        <ul class="list-unstyled">
+          <li ng-repeat="tax in taxon.synonyms">
+            <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a>
+          </li>
+        </ul>
+      </dd>
     </dl>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-md-6">
-    <h3>Children</h3>
-    <ul>
-      <li ng-repeat="tax in taxon.children">
-        <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a> <small>{{tax.rank}}</small>
-      </li>
-    </ul>
-    <p ng-if="taxon.children.length == 0">None</p>
-  </div>
-
-  <div class="col-md-6" ng-if="taxon.synonyms.length > 0">
-    <h3>Synonyms</h3>
-    <ul>
-      <li ng-repeat="tax in taxon.synonyms">
-        <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a>
-      </li>
-    </ul>
   </div>
 </div>
