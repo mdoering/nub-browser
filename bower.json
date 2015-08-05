@@ -1,0 +1,14 @@
+{
+  "name": "nub-browser",
+  "description": "GBF backbone browser",
+  "version": "0.0.1",
+  "homepage": "https://github.com/mdoering/nub-browser",
+  "license": "Apache2",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.4.0",
+    "angular-route": "~1.4.0",
+    "angular-loader": "~1.4.0",
+    "bootstrap": "~3.3.0"
+  }
+}
