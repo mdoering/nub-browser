@@ -1,9 +1,11 @@
 # GBIF Taxonomic Browser
 A simple taxonomic browser for the [GBIF Backbone Taxonomy](http://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c)
-or any other ChecklistBank checklist.
+or any other ChecklistBank checklist. 
 
+The [browser is setup on github pages](http://mdoering.github.io/nub-browser/app/#/)  to brwose the current live GBIF backbone.
 
-## Install Dependencies
+## Run locally
+### Install Dependencies
 
 We have two kinds of dependencies in this project: tools and angular framework code.  The tools help us manage the application.
 
@@ -26,7 +28,7 @@ folders in your project.
 angular-seed changes this location through the `.bowerrc` file.  Putting it in the app folder makes
 it easier to serve the files by a webserver.*
 
-## Run the Application
+### Run the Application
 
 We have preconfigured the project with a simple development web server.  The simplest way to start
 this server is:
