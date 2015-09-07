@@ -4,7 +4,7 @@
 angular.module('nubBrowser', ['ngRoute'])
 
 .constant("CFG", {
-  "api": "http://api.gbif.org/v1/",
+  "api": "http://api.gbif-uat.org/v1/",
   "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
 })
     
