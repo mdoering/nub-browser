@@ -9,6 +9,9 @@
     "angular": "~1.4.0",
     "angular-route": "~1.4.0",
     "angular-loader": "~1.4.0",
-    "bootstrap": "~3.3.0"
+    "bootstrap": "~3.3.0",
+    "d3": "~3.5",
+    "leaflet": "0.7",
+    "angular-leaflet-directive": "0.10"
   }
 }

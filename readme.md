@@ -9,7 +9,7 @@ The [browser is setup on github pages](http://mdoering.github.io/nub-browser/app
 
 We have two kinds of dependencies in this project: tools and angular framework code.  The tools help us manage the application.
 
-* We get the tools we depend upon via `npm`, the [node package manager][npm].
+* We get the tools we depend upon via `npm`, the [node package manager][npm]. On oSX install npm via `brew install node`.
 * We get the angular code via `bower`, a [client-side code package manager][bower].
 
 We have preconfigured `npm` to automatically run `bower` so we can simply do:
