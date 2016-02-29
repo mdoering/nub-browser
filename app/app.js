@@ -4,8 +4,10 @@
 angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
 
 .constant("CFG", {
-  "api": "http://api.gbif-uat.org/v1/",
-  "apiPrev": "http://api.gbif.org/v1/",
+  //"api": "http://api.gbif-uat.org/v1/",
+  //"apiPrev": "http://api.gbif.org/v1/",
+    "api": "http://localhost:8080/uat/",
+    "apiPrev": "http://localhost:8080/",
   "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
 })
     
@@ -162,24 +164,34 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
         replace: false,
         scope: {taxon: '='},
         link: function(scope, elem, attrs) {
-            var chart = d3.select(elem[0]);
+            var chart = d3.select(elem[0]).append("div");
             // calc change
             $http.get(CFG.api + "occurrence/count?taxonKey=" + scope.taxon).success(function (data) {
                 //console.log(data);
                 $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + scope.taxon).success(function (data2) {
                     var perc = data2 == 0 ? (data == 0 ? 1 : 0) : Math.min(999, Math.round(100 * data / data2));
-                    chart.text(data2);
+                    chart.text(hsize(data2));
                     if (perc > 200) {
-                        chart.attr("class", "muchmore");
+                        chart.attr("class", "text-right muchmore");
                     } else if (perc > 110){
-                        chart.attr("class", "more");
+                        chart.attr("class", "text-right more");
                     } else if (perc < 50){
-                        chart.attr("class", "muchless");
+                        chart.attr("class", "text-right muchless");
                     } else if (perc < 90){
-                        chart.attr("class", "less");
+                        chart.attr("class", "text-right less");
                     }
                 });
             });
+            function hsize(num) {
+                if (num > 1000000000) {
+                    return Math.round(num/1000000000) + "B";
+                } else if (num > 1000000) {
+                    return Math.round(num/1000000) + "M";
+                } else if (num > 1000) {
+                    return Math.round(num/1000) + "K";
+                }
+                return num;
+            }
         }
     };
 })

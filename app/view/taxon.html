@@ -9,11 +9,13 @@
 <div class="row">
     <div class="col-md-5">
         <ul class="list-unstyled">
-            <li ng-repeat="tax in taxon.parents">
-                <a style="margin-left:{{$index*10}}px" href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a>
+            <li style="margin-left:{{$index*10}}px" ng-repeat="tax in taxon.parents">
+                <occ-change taxon="tax.key"></occ-change>
+                <a href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a>
                 <small>{{tax.rank}}</small>
             </li>
             <li style="margin-left:{{taxon.parents.length*10}}px">
+                <occ-change taxon="taxon.key"></occ-change>
                 <strong>{{taxon.details.canonicalName}}</strong>
                 <small>{{taxon.details.rank}}</small>
             </li>

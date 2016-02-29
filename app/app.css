@@ -24,25 +24,25 @@ small {
     text-decoration: line-through;
 }
 
-occ-change {
+occ-change div {
     font-size: 8px;
     color: #ccc;
     float: left;
     position: relative;
-    left: -40px;
+    left: -25px;
     top: 5px;
     width: 0px;
 }
-occ-change.more {
+occ-change div.more {
     color: lightgreen;
 }
-occ-change.muchmore {
+occ-change div.muchmore {
     color: lawngreen;
 }
-occ-change.less {
+occ-change div.less {
     color: lightsalmon;
 }
-occ-change.muchless {
+occ-change div.muchless {
     color: orangered;
 }
 
