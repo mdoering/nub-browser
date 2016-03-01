@@ -8,19 +8,19 @@
 
 <div class="row">
     <div class="col-md-5">
-        <ul class="list-unstyled">
+        <ul class="list-unstyled text-nowrap">
             <li style="margin-left:{{$index*10}}px" ng-repeat="tax in taxon.parents">
-                <occ-change taxon="tax.key"></occ-change>
+                <occ-change taxon="tax"></occ-change>
                 <a href="#/taxon/{{tax.key}}">{{tax.canonicalName}}</a>
                 <small>{{tax.rank}}</small>
             </li>
             <li style="margin-left:{{taxon.parents.length*10}}px">
-                <occ-change taxon="taxon.key"></occ-change>
+                <occ-change taxon="taxon.details"></occ-change>
                 <strong>{{taxon.details.canonicalName}}</strong>
                 <small>{{taxon.details.rank}}</small>
             </li>
             <li style="margin-left:{{(taxon.parents.length+1)*10}}px" ng-repeat="tax in taxon.children">
-                <occ-change taxon="tax.key"></occ-change>
+                <occ-change taxon="tax"></occ-change>
                 <a href="#/taxon/{{tax.key}}">{{tax.name}}</a>
                 <small>{{tax.rank}}</small>
             </li>
@@ -61,12 +61,24 @@
                     </li>
                 </ul>
             </dd>
+
+            <dt>Occurrences</dt>
+            <dd>{{taxon.details.occ | number}} <small ng-class="taxon.details.occRatioClass"><span ng-show="taxon.details.occ >= taxon.details.occPrev">+</span>{{taxon.details.occ - taxon.details.occPrev | number}}</small></dd>
         </dl>
 
-        <div id="maps" class="row">
-            <leaflet height="480px" width="640px" layers="layers" defaults="defaults"></leaflet>
-        </div>
+        <leaflet height="360px" width="640px" layers="layers" defaults="defaults"></leaflet>
 
-        <tree-map width="640" height="480" tree="taxon.children"></tree-map>
+        <h4>Children by descendants</h4>
+        <tree-map width="640" height="320" tree="taxon.children" event="children-retrieved" size-attr="size">
+            Retrieving metrics ...
+        </tree-map>
+
+        <h4>Children by occurrences</h4>
+        <tree-map width="640" height="320" tree="taxon.children" event="occ-counted" size-attr="occ" class-attr="occRatioClass">
+            Retrieving occurrence metrics ...
+        </tree-map>
+
+<!--
+-->
     </div>
 </div>

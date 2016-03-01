@@ -4,10 +4,10 @@
 angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
 
 .constant("CFG", {
-  "api": "http://api.gbif-uat.org/v1/",
-  "apiPrev": "http://api.gbif.org/v1/",
-  //"api": "http://localhost:8080/uat/",
-  //"apiPrev": "http://localhost:8080/",
+  //"api": "http://api.gbif-uat.org/v1/",
+  //"apiPrev": "http://api.gbif.org/v1/",
+  "api": "http://localhost:8080/uat/",
+  "apiPrev": "http://localhost:8080/",
   "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
 })
     
@@ -46,8 +46,9 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
   getRoot();
 }])
 
-.controller('TaxonCtrl', ['$scope', '$http', 'CFG', '$routeParams', function($scope, $http, CFG, $routeParams) {
+.controller('TaxonCtrl', ['$rootScope', '$scope', '$http', 'CFG', '$routeParams', function($rootScope, $scope, $http, CFG, $routeParams) {
   var self = this;
+  var occCounts = 0;
 
   self.key = $routeParams.id;
   self.details = {};
@@ -55,20 +56,9 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
   self.synonyms = [];
   self.children = [];
   self.combinations = [];
+  self.childrenOcc = [];
 
   var speciesUrl = CFG.api + 'species/' + self.key;
-
-  var pageChildren = function(offset) {
-    var url = speciesUrl+"/children?limit=20&offset="+offset;
-    $http.get(url).success(function (resp) {
-      if (resp.results.length > 0) {
-        self.children = self.children.concat(resp.results);
-        if (!resp.endOfRecords){
-          pageChildren(20+resp.offset);
-        }
-      }
-    })
-  };
 
   var pageSynonyms = function(offset) {
     var url = speciesUrl+"/synonyms?limit=20&offset="+offset;
@@ -77,31 +67,64 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
         self.synonyms = self.synonyms.concat(resp.results);
         if (!resp.endOfRecords){
           pageSynonyms(20+resp.offset);
+        } else {
+          self.synonyms.forEach(addCounts);
         }
       }
     })
   };
 
-  // retrieves all taxon details
-  var loadTaxon = function() {
-    console.log("load " + speciesUrl);
-    $http.get(speciesUrl).success(function (data) {
-      self.details = data;
-    });
-    $http.get(speciesUrl+"/parents").success(function (data) {
-      self.parents = data;
-    });
-    $http.get(CFG.api + 'treemap/children/' + self.key).success(function (data) {
-      self.children = data;
-    });
-    pageSynonyms(0);
-    $http.get(speciesUrl+"/combinations").success(function (data) {
-      self.combinations = data;
-    });
-  };
+  function addCounts(obj) {
+      ++occCounts;
+      $http.get(CFG.api + "occurrence/count?taxonKey=" + obj.key).success(function (data) {
+          obj.occ = data;
+          $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + obj.key).success(function (data2) {
+              if(--occCounts === 0) {
+                  $rootScope.$broadcast('occ-counted');
+              }
+              obj.occPrev = data2;
+              obj.occRatio = data2 == 0 ? (data == 0 ? 1 : 0) : data / data2;
+              if (obj.occRatio > 2) {
+                  obj.occRatioClass="muchmore";
+              } else if (obj.occRatio > 1.1){
+                  obj.occRatioClass="more";
+              } else if (obj.occRatio < 0.5){
+                  obj.occRatioClass="muchless";
+              } else if (obj.occRatio < 0.9){
+                  obj.occRatioClass="less";
+              }
+          }).error(function(msg){
+              if(--occCounts === 0) {
+                  $rootScope.$broadcast('occ-counted');
+              }
+          });
+      }).error(function(msg){
+          if(--occCounts === 0) {
+              $rootScope.$broadcast('occ-counted');
+          }
+      });
+  }
 
-  // load data
-  loadTaxon();
+  // retrieves all taxon details
+  $http.get(speciesUrl).success(function (data) {
+      self.details = data;
+      addCounts(self.details);
+  });
+  $http.get(speciesUrl+"/parents").success(function (data) {
+      self.parents = data;
+      self.parents.forEach(addCounts);
+  });
+  $http.get(CFG.api + 'treemap/children/' + self.key).success(function (data) {
+      self.children = data;
+      // add occurrence counts to each child
+      self.children.forEach(addCounts);
+      $rootScope.$broadcast('children-retrieved');
+  });
+  $http.get(speciesUrl+"/combinations").success(function (data) {
+      self.combinations = data;
+      self.combinations.forEach(addCounts);
+  });
+  pageSynonyms(0);
 
   // setup map tiles
   angular.extend($scope, {
@@ -158,123 +181,119 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
   };
 }])
 
-.directive("occChange", function($http, CFG) {
-    return {
-        restrict: "EA",
-        replace: false,
-        scope: {taxon: '='},
-        link: function(scope, elem, attrs) {
-            var chart = d3.select(elem[0]).append("div");
-            // calc change
-            $http.get(CFG.api + "occurrence/count?taxonKey=" + scope.taxon).success(function (data) {
-                //console.log(data);
-                $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + scope.taxon).success(function (data2) {
-                    var perc = data2 == 0 ? (data == 0 ? 1 : 0) : Math.min(999, Math.round(100 * data / data2));
-                    chart.text(hsize(data2));
-                    if (perc > 200) {
-                        chart.attr("class", "text-right muchmore");
-                    } else if (perc > 110){
-                        chart.attr("class", "text-right more");
-                    } else if (perc < 50){
-                        chart.attr("class", "text-right muchless");
-                    } else if (perc < 90){
-                        chart.attr("class", "text-right less");
-                    }
-                });
-            });
-            function hsize(num) {
-                if (num > 1000000000) {
-                    return Math.round(num/1000000000) + "B";
-                } else if (num > 1000000) {
-                    return Math.round(num/1000000) + "M";
-                } else if (num > 1000) {
-                    return Math.round(num/1000) + "K";
-                }
-                return num;
+.filter('humanSize', function() {
+    function trim(num, chars) {
+        var x = num+"";
+        if (x.length > chars) {
+            x = x.substr(0, chars);
+            if (x[chars-1] == '.' ) {
+                x = x.substr(0, chars-1);
             }
         }
+        return x;
+    }
+    return function(num) { // first arg is the input, rest are filter params
+        if (num > 1000000000) {
+            return trim(num/1000000000, 3) + "B";
+        } else if (num > 1000000) {
+            return trim(num/1000000, 3) + "M";
+        } else if (num > 1000) {
+            return trim(num/1000, 3) + "K";
+        }
+        return num;
+    }
+})
+.directive('occChange', function() {
+    return {
+        restrict: "E",
+        scope: {taxon: '='},
+        template: '<div ng-class="taxon.occRatioClass">{{taxon.occ | humanSize}}</div>'
     };
 })
-
-.directive("treeMap", function() {
+.directive("treeMap", ['$rootScope', '$filter', function($rootScope, $filter) {
     return {
-        restrict: "EA",
+        restrict: "E",
         replace: true,
-        //our data source would be an array with name & size fields
         scope: {
             tree: '=',
+            event: '@',
+            sizeAttr: '@',
+            classAttr: '@?',
             width: '=',
             height: '='
         },
         link: function(scope, elem, attrs) {
-            var unwatch = scope.$watch('tree', function(newVal, oldVal) {
-                if (newVal && newVal.length>0) {
+            $rootScope.$on(scope.event, function (){
+                if (scope.tree.length > 0) {
                     render();
-                    // remove the watcher
-                    unwatch();
-                }
-
-                function load(key, t) {
-                    console.log(key);
-                }
-
-                function position() {
-                    this.style("left", function(d) { return d.x + "px"; })
-                        .style("top", function(d) { return d.y + "px"; })
-                        .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-                        .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
-                }
-
-                function render(){
-                    console.log(scope.tree);
-                    var data2 = {"name": "backbone", "children": scope.tree};
-
-                    var container = d3.select(elem[0]);
-
-                    var tpdiv = container.append("div")
-                        .attr("class", "tooltip")
-                        .style("opacity", 0);
-
-                    var div = container.append("div")
-                        .attr("class", "tmap");
-
-                    var treemap = d3.layout.treemap()
-                        .size([scope.width, scope.height])
-                        .sticky(true)
-                        .round(false)
-                        .value(function (d) {
-                            return d.size + 1;
-                        });
-
-                    var node = div.datum(data2).selectAll(".node")
-                        .data(treemap.nodes)
-                        .enter().append("div")
-                        .attr("class", "node")
-                        //.attr("id", function(d){return d.key;})
-                        .call(position)
-                        .text(function (d) {return d.name;})
-                        .on("mouseover", function (d) {
-                            tpdiv.transition()
-                                .duration(200)
-                                .style("opacity", .9);
-                            tpdiv.html(d.name + "<div class='size'>" + d.size + "</div>")
-                                .style("left", (d3.event.pageX) + "px")
-                                .style("top", (d3.event.pageY - 28) + "px");
-                        })
-                        .on("mouseout", function (d) {
-                            tpdiv.transition()
-                                .duration(500)
-                                .style("opacity", 0);
-                        })
-                        .on("click", function(d){
-                            window.location.href="#/taxon/"+ d.key;
-                        })
-                        ;
+                } else {
+                    var unwatch = scope.$watch('tree', function(newVal, oldVal) {
+                        if (scope.tree.length > 0) {
+                            render();
+                            // remove the watcher
+                            unwatch();
+                        }
+                    });
                 }
             });
+            function render(){
+                console.log("Render tree-map for event "+scope.event);
+                // we copy the data cause treemap will resort the array...
+                var data2 = {"name": "backbone", "children": angular.copy(scope.tree)};
+                console.log(data2);
+                var container = d3.select(elem[0]);
+                container.html("");
+                var tpdiv = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+                var div = container.append("div")
+                    .attr("class", "tmap")
+                    .style("width", scope.width + "px")
+                    .style("height", scope.height + "px")
+
+                var treemap = d3.layout.treemap()
+                    .size([scope.width, scope.height])
+                    .sticky(true)
+                    .round(false)
+                    .value(function (d) {
+                        return d[scope.sizeAttr] + 1;
+                    });
+
+                var nodeCl = scope.classAttr ? function(d){return "node" + (d[scope.classAttr] ? " "+d[scope.classAttr] : "")} : "node";
+                var node = div.datum(data2).selectAll(".node")
+                    .data(treemap.nodes)
+                    .enter().append("div")
+                    .attr("class", nodeCl)
+                    .call(position)
+                    .text(function (d) {return d.name;})
+                    .on("mouseover", function (d) {
+                        tpdiv.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        tpdiv.html(d.name + "<div class='size'>" + $filter('number')(d[scope.sizeAttr]) + "</div>")
+                            .style("left", (d3.event.pageX + 15) + "px")
+                            .style("top", (d3.event.pageY - 40) + "px");
+                    })
+                    .on("mouseout", function (d) {
+                        tpdiv.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    })
+                    .on("click", function(d){
+                        window.location.href="#/taxon/"+ d.key;
+                    })
+                    ;
+            }
+            function position() {
+                this.style("left", function(d) { return d.x + "px"; })
+                    .style("top", function(d) { return d.y + "px"; })
+                    .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+                    .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+            }
         }
     }
-})
+}])
 
 .directive("barsChart", function($window) {
     return {
