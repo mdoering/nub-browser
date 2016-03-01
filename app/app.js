@@ -4,10 +4,10 @@
 angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
 
 .constant("CFG", {
-  //"api": "http://api.gbif-uat.org/v1/",
-  //"apiPrev": "http://api.gbif.org/v1/",
-  "api": "http://localhost:8080/uat/",
-  "apiPrev": "http://localhost:8080/",
+  "api": "http://api.gbif-uat.org/v1/",
+  "apiPrev": "http://api.gbif.org/v1/",
+  //"api": "http://localhost:8080/uat/",
+  //"apiPrev": "http://localhost:8080/",
   "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
 })
     
