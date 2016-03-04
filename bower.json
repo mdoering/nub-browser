@@ -12,6 +12,7 @@
     "bootstrap": "~3.3.0",
     "d3": "~3.5",
     "leaflet": "0.7",
-    "angular-leaflet-directive": "0.10"
+    "angular-leaflet-directive": "0.10",
+    "angular-strap": "2.3"
   }
 }

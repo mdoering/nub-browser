@@ -21,8 +21,7 @@
             </li>
             <li style="margin-left:{{(taxon.parents.length+1)*10}}px" ng-repeat="tax in taxon.children">
                 <occ-change taxon="tax"></occ-change>
-                <a href="#/taxon/{{tax.key}}">{{tax.name}}</a>
-                <small>{{tax.rank}}</small>
+                <taxon tax="tax"></taxon>
             </li>
         </ul>
     </div>
