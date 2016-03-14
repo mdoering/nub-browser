@@ -8,25 +8,40 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
         "apiPrev": "http://api.gbif.org/v1/",
         //"api": "http://localhost:8080/uat/",
         //"apiPrev": "http://localhost:8080/",
+        "portal": "http://www.gbif-uat.org/",
+        "portalPrev": "http://www.gbif.org/",
         "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
+    })
+
+    .run(function ($rootScope, CFG) {
+        $rootScope.cfg = CFG;
     })
 
     .config(['$routeProvider', function ($routeProvider) {
         $routeProvider
             .when('/', {
-                templateUrl: 'view/root.html', controller: 'RootCtrl', controllerAs: 'root'
+                templateUrl: 'view/root.html', controller: 'RootCtrl', controllerAs: 'ctrl'
+            })
+            .when('/tree', {
+                templateUrl: 'view/tree.html', controller: 'TreeCtrl', controllerAs: 'ctrl'
+            })
+            .when('/metrics', {
+                templateUrl: 'view/metrics.html', controller: 'MetricsCtrl', controllerAs: 'ctrl'
             })
             .when('/search/:q', {
-                templateUrl: 'view/search.html', controller: 'SearchCtrl', controllerAs: 'search'
+                templateUrl: 'view/search.html', controller: 'SearchCtrl', controllerAs: 'ctrl'
             })
             .when('/taxon/:id', {
-                templateUrl: 'view/taxon.html', controller: 'TaxonCtrl', controllerAs: 'taxon'
+                templateUrl: 'view/taxon.html', controller: 'TaxonCtrl', controllerAs: 'ctrl'
             })
             .otherwise({redirectTo: '/'});
     }])
 
+    .controller('RootCtrl', ['CFG', function (CFG) {
+        var self = this;
+    }])
 
-    .controller('RootCtrl', ['$scope', '$http', 'CFG', '$location', '$anchorScroll', function ($scope, $http, CFG, $location, $anchorScroll) {
+    .controller('TreeCtrl', ['$scope', '$http', 'CFG', '$location', '$anchorScroll', function ($scope, $http, CFG, $location, $anchorScroll) {
         var self = this;
         // load root classification
         $http.get(CFG.api + "species/rootNub").success(function (data) {
@@ -45,35 +60,130 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
         };
     }])
 
+    .controller('MetricsCtrl', ['$rootScope', '$scope', '$http', 'CFG', function ($rootScope, $scope, $http, CFG) {
+        var self = this;
+        var kingdoms = {
+            "INCERTAE_SEDIS": 0,
+            "ANIMALIA": 1,
+            "ARCHAEA": 2,
+            "BACTERIA": 3,
+            "CHROMISTA": 4,
+            "FUNGI": 5,
+            "PLANTAE": 6,
+            "PROTOZOA": 7,
+            "VIRUSES": 8
+        };
+
+        // load nub metrics
+        addMetrics(CFG.api, 0);
+        addMetrics(CFG.apiPrev, 1);
+
+        function addMetrics(api, idx) {
+            $http.get(api + "dataset/" + CFG.datasetKey + "/metrics").success(function (data) {
+                console.log(data);
+                addObjProperty("counts", "total usages", data.usagesCount, idx);
+                addObjProperty("counts", "synonyms", data.synonymsCount, idx);
+                addProperty("kingdoms", data.countByKingdom, idx);
+                addProperty("ranks", data.countByRank, idx);
+                addProperty("origins", data.countByOrigin, idx);
+                addProperty("issues", data.countByIssue, idx);
+                for (var k in data.countByKingdom) {
+                    const king = k;
+                    $http.get(api + "occurrence/count?taxonKey=" + kingdoms[k]).success(function (data) {
+                        addObjProperty("kingdomsOcc", king, data, idx);
+                    });
+                }
+            });
+        }
+        function addProperty(name, data, idx) {
+            for (var key in data) {
+                addObjProperty(name, key, data[key], idx);
+            }
+        }
+        function addObjProperty(name, key, val, idx) {
+            if (!self[name]) {
+                self[name] = {};
+            }
+            if (!self[name][key]) {
+                self[name][key] = [0,0];
+            }
+            self[name][key][idx] = val;
+        }
+    }])
+
+    .controller('SearchCtrl', ['$http', 'CFG', '$routeParams', function ($http, CFG, $routeParams) {
+        var self = this;
+        self.query = $routeParams.q;
+        self.results = [];
+
+        var search = function () {
+            $http.get(CFG.api + "species/search?limit=50&datasetKey=" + CFG.datasetKey + "&q=" + self.query).success(function (data) {
+                //$http.get(CFG.api+"species?limit=50&datasetKey="+CFG.datasetKey+"&name="+self.query).success(function (data) {
+                self.results = data.results;
+            });
+        };
+        search();
+    }])
+
     .controller('TaxonCtrl', ['$rootScope', '$scope', '$http', 'CFG', '$routeParams', function ($rootScope, $scope, $http, CFG, $routeParams) {
         var self = this;
         var occCounts = 0;
 
         self.key = $routeParams.id;
-        self.details = {};
-        self.parents = [];
-        self.synonyms = [];
-        self.children = [];
-        self.combinations = [];
+        self.tax = loadTaxon(CFG.api, self.key, true);
+        self.taxPrev = loadTaxon(CFG.apiPrev, self.key, false);
         self.childrenOcc = [];
 
-        var speciesUrl = CFG.api + 'species/' + self.key;
+        function loadTaxon(api, key, countOcc) {
+            var tax = {};
+            tax.parents = [];
+            tax.synonyms = [];
+            tax.combinations = [];
+            tax.children = [];
 
-        var pageSynonyms = function (offset) {
-            var url = speciesUrl + "/synonyms?limit=20&offset=" + offset;
-            $http.get(url).success(function (resp) {
-                if (resp.results.length > 0) {
-                    self.synonyms = self.synonyms.concat(resp.results);
-                    if (!resp.endOfRecords) {
-                        pageSynonyms(20 + resp.offset);
-                    } else {
-                        self.synonyms.forEach(addCounts);
-                    }
+            var speciesUrl = api + 'species/' + self.key;
+
+            $http.get(speciesUrl).success(function (data) {
+                tax.details = data;
+                tax.key = key;
+                if (countOcc) {
+                    addOccCounts(tax.details);
                 }
-            })
-        };
+                $http.get(speciesUrl + "/parents").success(function (data) {
+                    tax.parents = data;
+                    if (countOcc) {
+                        tax.parents.forEach(addOccCounts);
+                    }
+                });
+                $http.get(api + 'treemap/children/' + self.key).success(function (data) {
+                    tax.children = data;
+                    // add occurrence counts to each child
+                    if (countOcc) {
+                        tax.children.forEach(addOccCounts);
+                        $rootScope.$broadcast('children-retrieved');
+                    }
+                });
+                $http.get(speciesUrl + "/combinations").success(function (data) {
+                    tax.combinations = data;
+                    if (countOcc) {
+                        tax.combinations.forEach(addOccCounts);
+                    }
+                });
+                $http.get(speciesUrl + "/synonyms?limit=100").success(function (resp) {
+                    if (resp.results.length > 0) {
+                        tax.synonyms = resp.results;
+                        if (countOcc) {
+                            tax.synonyms.forEach(addOccCounts);
+                        }
+                    }
+                });
+            }).error(function (msg) {
+                console.log(msg);
+            });
+            return tax;
+        }
 
-        function addCounts(obj) {
+        function addOccCounts(obj) {
             ++occCounts;
             $http.get(CFG.api + "occurrence/count?taxonKey=" + obj.key).success(function (data) {
                 obj.occ = data;
@@ -104,27 +214,6 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
             });
         }
 
-        // retrieves all taxon details
-        $http.get(speciesUrl).success(function (data) {
-            self.details = data;
-            addCounts(self.details);
-        });
-        $http.get(speciesUrl + "/parents").success(function (data) {
-            self.parents = data;
-            self.parents.forEach(addCounts);
-        });
-        $http.get(CFG.api + 'treemap/children/' + self.key).success(function (data) {
-            self.children = data;
-            // add occurrence counts to each child
-            self.children.forEach(addCounts);
-            $rootScope.$broadcast('children-retrieved');
-        });
-        $http.get(speciesUrl + "/combinations").success(function (data) {
-            self.combinations = data;
-            self.combinations.forEach(addCounts);
-        });
-        pageSynonyms(0);
-
         // setup map tiles
         angular.extend($scope, {
             layers: {
@@ -150,26 +239,23 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
         });
     }])
 
-    .controller('SearchCtrl', ['$http', 'CFG', '$routeParams', function ($http, CFG, $routeParams) {
-        var self = this;
-        self.query = $routeParams.q;
-        self.results = [];
-
-        var search = function () {
-            $http.get(CFG.api + "species/search?limit=50&datasetKey=" + CFG.datasetKey + "&q=" + self.query).success(function (data) {
-                //$http.get(CFG.api+"species?limit=50&datasetKey="+CFG.datasetKey+"&name="+self.query).success(function (data) {
-                self.results = data.results;
-            });
-        };
-        search();
-    }])
-
+    // used for the outer layout which includes a search form
     .controller('MainCtrl', ['$scope', '$location', function ($scope, $location) {
         $scope.search = function () {
             $location.path("/search/" + $scope.query);
         };
     }])
 
+    .filter('capitalize', function () {
+    return function (x) {
+        return x.charAt(0).toUpperCase() + x.slice(1).toLowerCase().replace("_", " ");
+    }
+})
+    .filter('round', function () {
+        return function (num, tens) { // first arg is the input, rest are filter params
+            return Math.round(num/Math.pow(10, tens))*Math.pow(10, tens);
+        }
+    })
     .filter('humanSize', function () {
         function trim(num, chars) {
             var x = num + "";
@@ -193,9 +279,15 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
             return num;
         }
     })
+
     .directive('occChange', function () {
         return {
             restrict: "E", scope: {taxon: '='}, template: '<div ng-class="taxon.occRatioClass">{{taxon.occ | humanSize}}</div>'
+        };
+    })
+    .directive('descendantsChange', function () {
+        return {
+            restrict: "E", scope: {taxon: '='}, template: '<div ng-class="taxon.descendantsRatioClass">{{taxon.descendants | humanSize}}</div>'
         };
     })
     .directive('taxon', function () {
@@ -207,9 +299,12 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
     })
     .directive("treeMap", ['$rootScope', '$filter', function ($rootScope, $filter) {
         return {
-            restrict: "E", replace: true, scope: {
+            restrict: "E",
+            replace: true,
+            scope: {
                 tree: '=', event: '@', sizeAttr: '@', classAttr: '@?', width: '=', height: '='
-            }, link: function (scope, elem, attrs) {
+            },
+            link: function (scope, elem, attrs) {
                 $rootScope.$on(scope.event, function () {
                     if (scope.tree.length > 0) {
                         render();
@@ -291,5 +386,17 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
             }
         }
     }])
+    .directive('bar', function () {
+        return {
+            restrict: "E", scope: {title: '@', val: '='}, template: '<div><strong>{{title}}</strong>: {{val[0]}} vs {{val[1]}}</div>'
+        };
+    })
+    .directive('bars', function () {
+        return {
+            restrict: "E",
+            scope: {data: '=', width: '@', max: '@'},
+            templateUrl:'directives/bars.html'
+        };
+    })
 ;
 

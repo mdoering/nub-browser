@@ -1,0 +1,54 @@
+<div id="name" class="page-header">
+  <h1>Tree</h1>
+  <p>
+      The higher classification of the GBIF backbone from kingdom down to orders.
+  </p>
+  <p>
+      Incertae sedis taxa lacking a full classification have been removed in this view to not clutter the tree.
+      Please see individual taxon details or use the search for discovery.
+  </p>
+</div>
+
+<div class="row">
+    <div class="col-md-2">
+        <h2>Kingdom</h2>
+        <div id="kingdoms" class="bs-sidebar bs-scrollspy-list affix" data-offset-top="-80" bs-affix>
+            <ul class="nav">
+                <li ng-repeat="k in ctrl.kingdoms" bs-scrollspy data-target="#{{k.name}}">
+                    <a ng-click="scrollTo(k.name)">{{k.name}}</a>
+                    <ul class="nav">
+                        <li ng-repeat="p in ctrl.children[k.key]" bs-scrollspy data-target="#{{p.name}}">
+                            <a ng-click="scrollTo(p.name)">{{p.name}}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <h2>Kingdom to Order</h2>
+        <ul>
+            <li ng-repeat="k in ctrl.kingdoms">
+                <h4 id="{{k.name}}"><a href="#/taxon/{{k.key}}">{{k.name}}</a></h4>
+                <ul class="">
+                    <li ng-repeat="p in ctrl.children[k.key]">
+                        <taxon tax="p"></taxon>
+                        <ul class="">
+                            <li ng-repeat="c in ctrl.children[p.key]">
+                                <taxon tax="c"></taxon>
+                                <ul class="">
+                                    <li ng-repeat="o in ctrl.children[c.key]">
+                                        <taxon tax="o"></taxon>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+
+

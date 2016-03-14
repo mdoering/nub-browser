@@ -55,10 +55,11 @@ occ-change div {
     top: -1px;
 }
 .more {
-    color: #a7bf84;
+
+    color: palegreen;
 }
 .muchmore {
-    color: green;
+    color: forestgreen;
 }
 .less {
     color: lightsalmon;
@@ -119,18 +120,11 @@ occ-change div {
 
 
 
-.chart div {
-    width: 0;
-    transition: all 1s ease-out;
-    -moz-transition: all 1s ease-out;
-    -webkit-transition: all 1s ease-out;
-}
-.chart div {
-    font: 10px sans-serif;
-    background-color: steelblue;
-    text-align: right;
-    padding: 3px;
-    margin: 5px;
-    color: white;
-    box-shadow: 2px 2px 2px #666;
-}
+.bullet { font: 10px sans-serif}
+.bullet .marker { stroke: #000; stroke-width: 2px; }
+.bullet .tick line { stroke: #666; stroke-width: .5px; }
+.bullet .measure.s0 { fill: lightsteelblue; }
+.bullet .measure.s1 { fill: steelblue; }
+.bullet .title { font-size: 14px; font-weight: bold; }
+.bullet .subtitle { fill: #999; }
+.bullet .value { fill: #fff; }
