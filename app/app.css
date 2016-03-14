@@ -120,7 +120,7 @@ occ-change div {
 
 
 
-.bullet { font: 10px sans-serif}
+svg.bullet { font: 10px sans-serif; vertical-align: top}
 .bullet .marker { stroke: #000; stroke-width: 2px; }
 .bullet .tick line { stroke: #666; stroke-width: .5px; }
 .bullet .measure.s0 { fill: lightsteelblue; }
@@ -128,3 +128,10 @@ occ-change div {
 .bullet .title { font-size: 14px; font-weight: bold; }
 .bullet .subtitle { fill: #999; }
 .bullet .value { fill: #fff; }
+
+.bar-new {
+    color: steelblue;
+}
+.bar-curr {
+    color: lightsteelblue;
+}

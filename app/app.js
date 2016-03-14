@@ -248,7 +248,7 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
 
     .filter('capitalize', function () {
     return function (x) {
-        return x.charAt(0).toUpperCase() + x.slice(1).toLowerCase().replace("_", " ");
+        return x.charAt(0).toUpperCase() + x.slice(1).toLowerCase().replace(/_/g, " ");
     }
 })
     .filter('round', function () {

@@ -1,20 +1,22 @@
-<svg class="bullet" ng-repeat="(title,val) in data" width="{{width}}" height="24">
-    <g transform="translate(150,0)">
-        <rect class="measure s0" width="{{val[0] / max * (width-180)}}" height="14" x="0" y="3"></rect>
-        <rect class="measure s1" width="{{val[1] / max * (width-180)}}" height="14" x="0" y="3"></rect>
-        <line class="marker" x1="{{val[1] / max * (width-180)}}" x2="{{val[1] / max * (width-180)}}" y1="1" y2="19"></line>
+<svg class="bullet" ng-repeat="(title,val) in data" width="{{width}}" height="26">
+    <g transform="translate(170,0)">
+        <rect class="measure s0" width="{{val[1] / max * (width-200)}}" height="8" x="0" y="6"></rect>
+        <rect class="measure s1" width="{{val[0] / max * (width-200)}}" height="14" x="0" y="3"></rect>
+        <line class="marker" x1="{{val[1] / max * (width-200)}}" x2="{{val[1] / max * (width-200)}}" y1="1" y2="19"></line>
         <g transform="translate(-6,12)" style="text-anchor: end;">
             <text class="title">{{title | capitalize}}</text>
             <text class="subtitle" dy="1em">{{val[0]}}</text>
         </g>
+        <g ng-repeat="t in [0,1,2,3,4,5,6]" class="tick" transform="translate({{((width-200)/6 * t)}},0)" style="opacity: 1;">
+            <line y1="20" y2="24"></line>
+        </g>
     </g>
 </svg>
 
-<svg class="bullet" width="{{width}}" height="14">
-    <g transform="translate(150,0)">
-        <g ng-repeat="t in [0,1,2,3,4,5,6]" class="tick" transform="translate({{((width-180)/6 * t)}},0)" style="opacity: 1;">
-            <line y1="0" y2="2.5"></line>
-            <text text-anchor="middle" dy="1em" y="2.5">{{max/6 * t | round:2 | number}}</text>
+<svg class="bullet" width="{{width}}" height="12">
+    <g transform="translate(170,0)">
+        <g ng-repeat="t in [0,1,2,3,4,5,6]" class="tick" transform="translate({{((width-200)/6 * t)}},0)" style="opacity: 1;">
+            <text text-anchor="middle" dy="1em" y="0">{{max/6 * t | round:2 | number}}</text>
         </g>
     </g>
 </svg>
