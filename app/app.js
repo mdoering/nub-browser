@@ -1,20 +1,22 @@
 'use strict';
 
 // Declare app level module which depends on views, and components
-angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpers.dimensions', 'mgcrea.ngStrap.helpers.debounce'])
+angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpers.dimensions', 'mgcrea.ngStrap.helpers.debounce'])
 
     .constant("CFG", {
-        "api": "http://api.gbif-uat.org/v1/",
+        "api": "http://api.gbif.org/v1/",
         "apiPrev": "http://api.gbif.org/v1/",
         //"api": "http://localhost:8080/uat/",
         //"apiPrev": "http://localhost:8080/",
         "portal": "http://www.gbif-uat.org/",
         "portalPrev": "http://www.gbif.org/",
-        "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
+        "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c",
+        "mbAccessToken": "pk.eyJ1IjoiZ2JpZiIsImEiOiJjaWxhZ2oxNWQwMDBxd3FtMjhzNjRuM2lhIn0.g1IE8EfqwzKTkJ4ptv3zNQ"
     })
 
     .run(function ($rootScope, CFG) {
         $rootScope.cfg = CFG;
+        mapboxgl.accessToken = CFG.mbAccessToken;
     })
 
     .config(['$routeProvider', function ($routeProvider) {
@@ -134,6 +136,9 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
         self.taxPrev = loadTaxon(CFG.apiPrev, self.key, false);
         self.childrenOcc = [];
 
+        $rootScope.$broadcast('key-set');
+        console.log("broadcast " + self.key);
+
         function loadTaxon(api, key, countOcc) {
             var tax = {};
             tax.parents = [];
@@ -155,7 +160,7 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
                         tax.parents.forEach(addOccCounts);
                     }
                 });
-                $http.get(api + 'treemap/children/' + self.key).success(function (data) {
+                $http.get(speciesUrl + '/childrenAll/').success(function (data) {
                     tax.children = data;
                     // add occurrence counts to each child
                     if (countOcc) {
@@ -213,30 +218,6 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
                 }
             });
         }
-
-        // setup map tiles
-        angular.extend($scope, {
-            layers: {
-                baselayers: {
-                    osm: {
-                        name: 'OpenStreetMap', url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', type: 'xyz', "layerOptions": {
-                            "showOnSelector": false
-                        }
-                    }
-                }, overlays: {
-                    gbifPrev: {
-                        name: 'GBIF Previous',
-                        url: CFG.apiPrev + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&palette=purples&key=' + self.key,
-                        visible: true,
-                        type: 'xyz'
-                    }, gbif: {
-                        name: 'GBIF', url: CFG.api + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&key=' + self.key, visible: true, type: 'xyz'
-                    }
-                }
-            }, defaults: {
-                scrollWheelZoom: false, showSelector: false
-            }
-        });
     }])
 
     // used for the outer layout which includes a search form
@@ -398,5 +379,64 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive', 'mgcrea.ngStrap', 
             templateUrl:'directives/bars.html'
         };
     })
+    .directive('map', ['CFG', '$rootScope', function (CFG, $rootScope) {
+        return {
+            restrict: "E",
+            scope: {mapId:'@', taxonKey: '=', height: '@'},
+            link: function (scope, elem, attrs) {
+                elem.append('<div style="height:'+scope.height+'px"><div id="'+scope.mapId+'-prev" class="map" style="height:'+scope.height+'px"/> <div id="'+scope.mapId+'" class="map" style="height:'+scope.height+'px"/></div>');
+
+                var prev = new mapboxgl.Map({
+                    container: scope.mapId+'-prev',
+                    style: 'mapbox://styles/mapbox/dark-v8',
+                    center: [0, 0],
+                    zoom: 0
+                });
+
+                prev.on('style.load', function () {
+                    prev.addSource('gbif-prev', {
+                        type: 'raster',
+                        tiles: [
+                            CFG.apiPrev + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&palette=purples&key=' + scope.taxonKey
+                        ],
+                        tileSize: 256
+                    });
+                    prev.addLayer({
+                        id: 'gbif-prev',
+                        type: 'raster',
+                        source: 'gbif-prev'
+                    });
+                });
+                prev.doubleClickZoom.enable();
+                prev.keyboard.enable();
+
+                var next = new mapboxgl.Map({
+                    container: scope.mapId,
+                    style: 'mapbox://styles/mapbox/dark-v8',
+                    center: [0, 0],
+                    zoom: 0,
+                    attributionControl: false,
+                    scrollZoom: true
+                });
+                next.on('style.load', function () {
+                    next.addSource('gbif', {
+                        type: 'raster',
+                        tiles: [
+                            CFG.api + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&key=' + scope.taxonKey
+                        ],
+                        tileSize: 256
+                    });
+                    next.addLayer({
+                        id: 'gbif',
+                        type: 'raster',
+                        source: 'gbif'
+                    });
+                });
+
+                var comp = new mapboxgl.Compare(prev, next);
+                console.log(comp);
+            }
+        };
+    }])
 ;
 

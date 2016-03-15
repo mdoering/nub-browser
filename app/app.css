@@ -82,17 +82,14 @@ occ-change div {
     color: #666;
 }
 
-/* cant find a way to hide it via the leaflet directove
-.leaflet-control-layers {
-    visibility: hidden !important;
-}
-*/
 
+
+/* Treemap */
 .tmap {
     position: relative;
     font: 9px sans-serif;
 }
-.node {
+.tmap .node {
     border: solid 1px white;
     background: #D9EDF7;
     color: black !important;
@@ -113,13 +110,12 @@ occ-change div {
 .tmap .muchless {
     background: red !important;
 }
-
 .node:hover {
     background: #ccc;
 }
 
 
-
+/* Metrics */
 svg.bullet { font: 10px sans-serif; vertical-align: top}
 .bullet .marker { stroke: #000; stroke-width: 2px; }
 .bullet .tick line { stroke: #666; stroke-width: .5px; }
@@ -128,10 +124,20 @@ svg.bullet { font: 10px sans-serif; vertical-align: top}
 .bullet .title { font-size: 14px; font-weight: bold; }
 .bullet .subtitle { fill: #999; }
 .bullet .value { fill: #fff; }
-
 .bar-new {
     color: steelblue;
 }
 .bar-curr {
     color: lightsteelblue;
+}
+
+
+/* Mapbox maps */
+
+.map {
+    position:absolute;
+    width:100%;
+}
+.mapboxgl-compare .compare-swiper {
+    display: none;
 }

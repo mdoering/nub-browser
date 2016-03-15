@@ -67,7 +67,7 @@
             <dd>{{ctrl.tax.details.occ | number}} <small ng-class="ctrl.tax.details.occRatioClass"><span ng-show="ctrl.tax.details.occ >= ctrl.tax.details.occPrev">+</span>{{ctrl.tax.details.occ - ctrl.tax.details.occPrev | number}}</small></dd>
         </dl>
 
-        <leaflet height="360px" width="640px" layers="layers" defaults="defaults"></leaflet>
+        <map map-id="occmap" height="320" taxon-key="ctrl.key"></map>
 
         <h4>Children by descendants</h4>
         <tree-map width="640" height="320" tree="ctrl.tax.children" event="children-retrieved" size-attr="size">
