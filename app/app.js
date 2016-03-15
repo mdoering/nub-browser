@@ -4,7 +4,7 @@
 angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpers.dimensions', 'mgcrea.ngStrap.helpers.debounce'])
 
     .constant("CFG", {
-        "api": "http://api.gbif.org/v1/",
+        "api": "http://api.gbif-uat.org/v1/",
         "apiPrev": "http://api.gbif.org/v1/",
         //"api": "http://localhost:8080/uat/",
         //"apiPrev": "http://localhost:8080/",
