@@ -397,7 +397,7 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                     prev.addSource('gbif-prev', {
                         type: 'raster',
                         tiles: [
-                            CFG.apiPrev + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=4&palette=purples&key=' + scope.taxonKey
+                            CFG.apiPrev + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&palette=purples&key=' + scope.taxonKey
                         ],
                         tileSize: 256
                     });
@@ -422,7 +422,7 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                     next.addSource('gbif', {
                         type: 'raster',
                         tiles: [
-                            CFG.api + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=4&key=' + scope.taxonKey
+                            CFG.api + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&key=' + scope.taxonKey
                         ],
                         tileSize: 256
                     });
