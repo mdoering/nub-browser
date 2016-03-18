@@ -158,30 +158,40 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                 }
                 $http.get(speciesUrl + "/parents").success(function (data) {
                     tax.parents = data;
+                    if (tax.details.acceptedKey > 0) {
+                        // this is a synonym, add accepted
+                        var acc = {};
+                        acc.key = tax.details.acceptedKey;
+                        acc.canonicalName = tax.details.accepted;
+                        acc.rank = tax.details.rank;
+                        tax.parents.push(acc);
+                    }
                     if (countOcc) {
                         tax.parents.forEach(addOccCounts);
                     }
                 });
-                $http.get(speciesUrl + '/childrenAll/').success(function (data) {
-                    tax.children = data;
-                    // add occurrence counts to each child
-                    if (countOcc) {
-                        tax.children.forEach(addOccCounts);
-                        $rootScope.$broadcast('children-retrieved');
-                    }
-                });
+                if (!tax.details.acceptedKey > 0) {
+                    $http.get(speciesUrl + '/childrenAll/').success(function (data) {
+                        tax.children = data;
+                        // add occurrence counts to each child
+                        if (countOcc) {
+                            tax.children.forEach(addOccCounts);
+                            $rootScope.$broadcast('children-retrieved');
+                        }
+                    });
+                    $http.get(speciesUrl + "/synonyms?limit=100").success(function (resp) {
+                        if (resp.results.length > 0) {
+                            tax.synonyms = resp.results;
+                            if (countOcc) {
+                                tax.synonyms.forEach(addOccCounts);
+                            }
+                        }
+                    });
+                }
                 $http.get(speciesUrl + "/combinations").success(function (data) {
                     tax.combinations = data;
                     if (countOcc) {
                         tax.combinations.forEach(addOccCounts);
-                    }
-                });
-                $http.get(speciesUrl + "/synonyms?limit=100").success(function (resp) {
-                    if (resp.results.length > 0) {
-                        tax.synonyms = resp.results;
-                        if (countOcc) {
-                            tax.synonyms.forEach(addOccCounts);
-                        }
                     }
                 });
             }).error(function (msg) {
@@ -225,12 +235,9 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
             self.bboxChanged = false;
             // compare bounding boxes
             var tileUrl = 'map/density/tile.json?x=0&y=0&z=0&type=TAXON&key=' + key;
-
             $http.get(CFG.api + tileUrl).success(function (data) {
                 var bbox1 = data;
-                console.log(data);
                 $http.get(CFG.apiPrev + tileUrl).success(function (data) {
-                    console.log(data);
                     if (Math.abs(bbox1.minimumLatitude - data.minimumLatitude) > 0.1
                      || Math.abs(bbox1.minimumLongitude - data.minimumLongitude) > 0.1
                      || Math.abs(bbox1.maximumLatitude - data.maximumLatitude) > 0.1

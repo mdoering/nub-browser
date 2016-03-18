@@ -74,17 +74,17 @@
 
         <map map-id="occmap" height="320" taxon-key="ctrl.key"></map>
 
-        <h4>Children by descendants</h4>
-        <tree-map width="640" height="320" tree="ctrl.tax.children" event="children-retrieved" size-attr="size">
-            Retrieving metrics ...
-        </tree-map>
+        <div ng-show="!ctrl.tax.details.acceptedKey>0">
+            <h4>Children by descendants</h4>
+            <tree-map width="640" height="320" tree="ctrl.tax.children" event="children-retrieved" size-attr="size">
+                Retrieving metrics ...
+            </tree-map>
 
-        <h4>Children by occurrences</h4>
-        <tree-map width="640" height="320" tree="ctrl.tax.children" event="occ-counted" size-attr="occ" class-attr="occRatioClass">
-            Retrieving occurrence metrics ...
-        </tree-map>
+            <h4>Children by occurrences</h4>
+            <tree-map width="640" height="320" tree="ctrl.tax.children" event="occ-counted" size-attr="occ" class-attr="occRatioClass">
+                Retrieving occurrence metrics ...
+            </tree-map>
+        </div>
 
-<!--
--->
     </div>
 </div>
