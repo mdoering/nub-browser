@@ -139,5 +139,7 @@ svg.bullet { font: 10px sans-serif; vertical-align: top}
     width:100%;
 }
 .mapboxgl-compare .compare-swiper {
-    display: none;
+    background-color: transparent;
+    box-shadow: none;
+    top: 90%;
 }
