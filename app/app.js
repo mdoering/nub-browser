@@ -135,9 +135,11 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
         self.tax = loadTaxon(CFG.api, self.key, true);
         self.taxPrev = loadTaxon(CFG.apiPrev, self.key, false);
         self.childrenOcc = [];
+        compareBBox(self.key);
 
         $rootScope.$broadcast('key-set');
         console.log("broadcast " + self.key);
+
 
         function loadTaxon(api, key, countOcc) {
             var tax = {};
@@ -218,6 +220,28 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                 }
             });
         }
+
+        function compareBBox(key) {
+            self.bboxChanged = false;
+            // compare bounding boxes
+            var tileUrl = 'map/density/tile.json?x=0&y=0&z=0&type=TAXON&key=' + key;
+
+            $http.get(CFG.api + tileUrl).success(function (data) {
+                var bbox1 = data;
+                console.log(data);
+                $http.get(CFG.apiPrev + tileUrl).success(function (data) {
+                    console.log(data);
+                    if (Math.abs(bbox1.minimumLatitude - data.minimumLatitude) > 0.1
+                     || Math.abs(bbox1.minimumLongitude - data.minimumLongitude) > 0.1
+                     || Math.abs(bbox1.maximumLatitude - data.maximumLatitude) > 0.1
+                     || Math.abs(bbox1.maximumLongitude - data.maximumLongitude) > 0.1
+                    ) {
+                        self.bboxChanged = true;
+                    }
+                });
+            });
+        }
+
     }])
 
     // used for the outer layout which includes a search form
@@ -390,14 +414,15 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                     container: scope.mapId+'-prev',
                     style: 'mapbox://styles/mapbox/dark-v8',
                     center: [0, 0],
-                    zoom: 0
+                    zoom: 0,
+                    attributionControl: false
                 });
 
                 prev.on('style.load', function () {
                     prev.addSource('gbif-prev', {
                         type: 'raster',
                         tiles: [
-                            CFG.apiPrev + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&palette=purples&key=' + scope.taxonKey
+                            CFG.apiPrev + 'map/density/tile?x={x}&y={y}&z={z}&type=TAXON&resolution=2&key=' + scope.taxonKey
                         ],
                         tileSize: 256
                     });

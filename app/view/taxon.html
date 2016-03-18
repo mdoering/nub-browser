@@ -67,6 +67,11 @@
             <dd>{{ctrl.tax.details.occ | number}} <small ng-class="ctrl.tax.details.occRatioClass"><span ng-show="ctrl.tax.details.occ >= ctrl.tax.details.occPrev">+</span>{{ctrl.tax.details.occ - ctrl.tax.details.occPrev | number}}</small></dd>
         </dl>
 
+
+        <h4 class="pull-left">Current <span ng-show="!ctrl.taxPrev.details" class="badge">not existing</span></h4>
+        <h4 class="pull-right"><span class="muchless" ng-show="ctrl.bboxChanged">bbox changed </span>New</h4>
+        <div class="row"></div>
+
         <map map-id="occmap" height="320" taxon-key="ctrl.key"></map>
 
         <h4>Children by descendants</h4>
