@@ -49,7 +49,16 @@
             <dd ng-show="ctrl.tax.combinations.length>0">
                 <ul class="list-unstyled">
                     <li ng-repeat="tax in ctrl.tax.combinations">
-                        <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a>
+                        <usage tax="tax"></usage>
+                    </li>
+                </ul>
+            </dd>
+
+            <dt>Homonyms</dt>
+            <dd>
+                <ul class="list-unstyled">
+                    <li ng-repeat="tax in ctrl.tax.homonyms">
+                        <usage tax="tax"></usage>
                     </li>
                 </ul>
             </dd>
@@ -58,7 +67,7 @@
             <dd>
                 <ul class="list-unstyled">
                     <li ng-repeat="tax in ctrl.tax.synonyms">
-                        <a href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a>
+                        <usage tax="tax"></usage>
                     </li>
                 </ul>
             </dd>

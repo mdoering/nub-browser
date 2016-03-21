@@ -147,6 +147,7 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
             tax.synonyms = [];
             tax.combinations = [];
             tax.children = [];
+            tax.homonyms = [];
 
             var speciesUrl = api + 'species/' + self.key;
 
@@ -194,6 +195,11 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                         tax.combinations.forEach(addOccCounts);
                     }
                 });
+                $http.get(api + 'species?datasetKey=' + CFG.datasetKey + '&name=' + tax.details.canonicalName).success(function (data) {
+                    tax.homonyms = data.results.filter(function(t) {
+                        return t.key != key;
+                    });
+                });
             }).error(function (msg) {
                 console.log(msg);
             });
@@ -204,12 +210,12 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
             ++occCounts;
             $http.get(CFG.api + "occurrence/count?taxonKey=" + obj.key).success(function (data) {
                 obj.occ = data;
-                $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + obj.key).success(function (data2) {
+                $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + obj.key).success(function (dataPrev) {
                     if (--occCounts === 0) {
                         $rootScope.$broadcast('occ-counted');
                     }
-                    obj.occPrev = data2;
-                    obj.occRatio = data2 == 0 ? (data == 0 ? 1 : 0) : data / data2;
+                    obj.occPrev = dataPrev;
+                    obj.occRatio = dataPrev == 0 ? (data == 0 ? 1 : 100) : data / dataPrev;
                     if (obj.occRatio > 2) {
                         obj.occRatioClass = "muchmore";
                     } else if (obj.occRatio > 1.1) {
@@ -307,6 +313,13 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
             restrict: "E",
             scope: {tax: '='},
             template: '<a id="{{tax.name}}" ng-href="#/taxon/{{tax.key}}">{{tax.name}}</a> <small>{{tax.rank}}</small>'
+        };
+    })
+    .directive('usage', function () {
+        return {
+            restrict: "E",
+            scope: {tax: '='},
+            template: '<a ng-href="#/taxon/{{tax.key}}">{{tax.scientificName}}</a> <small>{{tax.rank}}</small>'
         };
     })
     .directive("treeMap", ['$rootScope', '$filter', function ($rootScope, $filter) {
