@@ -430,6 +430,7 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
             link: function (scope, elem, attrs) {
                 elem.append('<div style="height:'+scope.height+'px"><div id="'+scope.mapId+'-prev" class="map" style="height:'+scope.height+'px"/> <div id="'+scope.mapId+'" class="map" style="height:'+scope.height+'px"/></div>');
 
+                var prevLink = elem.append('<div id="xxx"></div>');
                 var prev = new mapboxgl.Map({
                     container: scope.mapId+'-prev',
                     style: 'mapbox://styles/mapbox/dark-v8',
@@ -479,7 +480,6 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                 });
 
                 var comp = new mapboxgl.Compare(prev, next);
-                console.log(comp);
             }
         };
     }])

@@ -37,16 +37,20 @@
             <dd>{{ctrl.tax.details.origin}} <a href="{{cfg.portal}}species/{{ctrl.tax.details.sourceTaxonKey}}">{{ctrl.tax.details.sourceTaxonKey}}</a></dd>
 
             <dt>Issues</dt>
-            <dd ng-repeat="issue in ctrl.tax.details.issues">
-                <small>{{issue}}</small>
+            <dd>
+                <ul class="list-unstyled">
+                    <li ng-repeat="issue in ctrl.tax.details.issues">
+                        <small>{{issue}}</small>
+                    </li>
+                </ul>
             </dd>
 
             <dt>Published in</dt>
             <dd>{{ctrl.tax.details.publishedIn}}</dd>
 
             <dt>Basionym<span ng-show="ctrl.tax.combinations.length>0"> of</span></dt>
-            <dd ng-show="ctrl.tax.details.basionymKey>0"><a href="#/taxon/{{ctrl.tax.details.basionymKey}}">{{ctrl.tax.details.basionym}}</a></dd>
-            <dd ng-show="ctrl.tax.combinations.length>0">
+            <dd>
+                <a ng-show="ctrl.tax.details.basionymKey>0" href="#/taxon/{{ctrl.tax.details.basionymKey}}">{{ctrl.tax.details.basionym}}</a>
                 <ul class="list-unstyled">
                     <li ng-repeat="tax in ctrl.tax.combinations">
                         <usage tax="tax"></usage>
