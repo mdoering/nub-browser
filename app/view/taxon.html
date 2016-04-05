@@ -87,7 +87,7 @@
 
         <map map-id="occmap" height="320" taxon-key="ctrl.key"></map>
 
-        <div ng-show="!ctrl.tax.details.acceptedKey>0">
+        <div ng-show="!ctrl.tax.details.acceptedKey>0 && ctrl.tax.children.length>0">
             <h4>Children by descendants</h4>
             <tree-map width="640" height="320" tree="ctrl.tax.children" event="children-retrieved" size-attr="size">
                 Retrieving metrics ...
