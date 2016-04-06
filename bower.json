@@ -12,6 +12,5 @@
     "bootstrap": "~3.3.0",
     "d3": "~3.5",
     "angular-strap": "2.3"
-
   }
 }

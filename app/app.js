@@ -3,7 +3,7 @@
 // Declare app level module which depends on views, and components
 angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpers.dimensions', 'mgcrea.ngStrap.helpers.debounce'])
 
-    .constant("CFG", {
+.constant("CFG", {
         "api": "http://api.gbif-uat.org/v1/",
         "apiPrev": "http://api.gbif.org/v1/",
         //"api": "http://localhost:8080/uat/",
