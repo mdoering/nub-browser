@@ -430,7 +430,21 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
             link: function (scope, elem, attrs) {
                 elem.append('<div style="height:'+scope.height+'px"><div id="'+scope.mapId+'-prev" class="map" style="height:'+scope.height+'px"/> <div id="'+scope.mapId+'" class="map" style="height:'+scope.height+'px"/></div>');
 
-                var prevLink = elem.append('<div id="xxx"></div>');
+                function toPointGeom(p) {
+                    // mapbox generates longitudes exceeding 180 in case the map is zoomed far out.
+                    var lng = Math.min(180, Math.max(-180, p.lng));
+                    return Math.round(lng*10)/10  + " " + Math.round(p.lat*10)/10;
+                }
+                function toGeometry(bbox) {
+                    return toPointGeom(bbox.getNorthWest()) + "," +
+                           toPointGeom(bbox.getSouthWest()) + "," +
+                           toPointGeom(bbox.getSouthEast()) + "," +
+                           toPointGeom(bbox.getNorthEast()) + "," +
+                           toPointGeom(bbox.getNorthWest());
+                }
+                function searchLink(baseUrl, bbox) {
+                    return baseUrl+"occurrence/search?TAXON_KEY=" + scope.taxonKey + "&GEOMETRY=" + toGeometry(bbox);
+                }
                 var prev = new mapboxgl.Map({
                     container: scope.mapId+'-prev',
                     style: 'mapbox://styles/mapbox/dark-v8',
@@ -456,6 +470,13 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                 prev.doubleClickZoom.enable();
                 prev.keyboard.enable();
 
+                var linkPrev = angular.element('<a class="pull-left">show occurrences</a>');
+                linkPrev.bind('click', function() {
+                    window.open(searchLink(CFG.portalPrev, prev.getBounds()));
+                });
+                elem.append(linkPrev);
+
+
                 var next = new mapboxgl.Map({
                     container: scope.mapId,
                     style: 'mapbox://styles/mapbox/dark-v8',
@@ -478,6 +499,12 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                         source: 'gbif'
                     });
                 });
+
+                var linkNext = angular.element('<a class="pull-right">show occurrences</a>');
+                linkNext.bind('click', function() {
+                    window.open(searchLink(CFG.portal, next.getBounds()));
+                });
+                elem.append(linkNext);
 
                 var comp = new mapboxgl.Compare(prev, next);
             }
