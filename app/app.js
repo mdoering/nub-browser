@@ -91,8 +91,8 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
                 addProperty("issues", data.countByIssue, idx);
                 for (var k in data.countByKingdom) {
                     const king = k;
-                    $http.get(api + "occurrence/count?taxonKey=" + kingdoms[k]).success(function (data) {
-                        addObjProperty("kingdomsOcc", king, data, idx);
+                    $http.get(api + "occurrence/search?limit=0&taxon_key=" + kingdoms[k]).success(function (data) {
+                        addObjProperty("kingdomsOcc", king, data.count, idx);
                     });
                 }
             });
@@ -208,14 +208,14 @@ angular.module('nubBrowser', ['ngRoute', 'mgcrea.ngStrap', 'mgcrea.ngStrap.helpe
 
         function addOccCounts(obj) {
             ++occCounts;
-            $http.get(CFG.api + "occurrence/count?taxonKey=" + obj.key).success(function (data) {
-                obj.occ = data;
-                $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + obj.key).success(function (dataPrev) {
+            $http.get(CFG.api + "occurrence/search?limit=0&taxon_key=" + obj.key).success(function (data) {
+                obj.occ = data.count;
+                $http.get(CFG.apiPrev + "occurrence/search?limit=0&taxon_key=" + obj.key).success(function (dataPrev) {
                     if (--occCounts === 0) {
                         $rootScope.$broadcast('occ-counted');
                     }
-                    obj.occPrev = dataPrev;
-                    obj.occRatio = dataPrev == 0 ? (data == 0 ? 1 : 100) : data / dataPrev;
+                    obj.occPrev = dataPrev.count;
+                    obj.occRatio = obj.occPrev == 0 ? (obj.occ == 0 ? 1 : 100) : obj.occ / obj.occPrev;
                     if (obj.occRatio > 2) {
                         obj.occRatioClass = "muchmore";
                     } else if (obj.occRatio > 1.1) {
