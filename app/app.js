@@ -4,10 +4,10 @@
 angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
 
 .constant("CFG", {
-  //"api": "http://api.gbif-uat.org/v1/",
-  //"apiPrev": "http://api.gbif.org/v1/",
-    "api": "http://localhost:8080/uat/",
-    "apiPrev": "http://localhost:8080/",
+  "api": "http://api.gbif-uat.org/v1/",
+  "apiPrev": "http://api.gbif.org/v1/",
+  //  "api": "http://localhost:8080/uat/",
+  //  "apiPrev": "http://localhost:8080/",
   "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
 })
     
@@ -166,11 +166,13 @@ angular.module('nubBrowser', ['ngRoute', 'leaflet-directive'])
         link: function(scope, elem, attrs) {
             var chart = d3.select(elem[0]).append("div");
             // calc change
-            $http.get(CFG.api + "occurrence/count?taxonKey=" + scope.taxon).success(function (data) {
+            $http.get(CFG.api + "occurrence/search?limit=0&taxon_key=" + scope.taxon).success(function (data) {
                 //console.log(data);
-                $http.get(CFG.apiPrev + "occurrence/count?taxonKey=" + scope.taxon).success(function (data2) {
-                    var perc = data2 == 0 ? (data == 0 ? 1 : 0) : Math.min(999, Math.round(100 * data / data2));
-                    chart.text(hsize(data2));
+                $http.get(CFG.apiPrev + "occurrence/search?limit=0&taxonKey=" + scope.taxon).success(function (data2) {
+                    var cnt  = data.count;
+                    var cnt2 = data2.count;
+                    var perc = cnt2 == 0 ? (cnt == 0 ? 1 : 0) : Math.min(999, Math.round(100 * cnt / cnt2));
+                    chart.text(hsize(cnt2));
                     if (perc > 200) {
                         chart.attr("class", "text-right muchmore");
                     } else if (perc > 110){
